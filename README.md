@@ -1,3 +1,3 @@
 # Skeleton-2d
-simple animator app demo
+simple animator app
 currently in Beta version
