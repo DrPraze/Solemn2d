@@ -15,30 +15,15 @@ from animator import anime
 #root = TkinterDnD.Tk()
 root = Tk()
 pygame.init()
-"""
-_next_ = ImageTk.PhotoImage(file = 'imgs/next.png')
-images = [_next_]
-with open('filename.spf', 'w+') as f:
-    text = str(images)
-    f.write(text)
-"""
 
 class Skeleton:
-    global pic
     menuBar = Menu(root)
     FileMenu = Menu(menuBar, tearoff = 0)
     ToolMenu = Menu(menuBar, tearoff = 0)
     HelpMenu = Menu(menuBar, tearoff = 0)
-
-    try:
-        Pic = PhotoImage(file = "skeleton.png")
-        pic = Label(root, image = Pic)
-        pic.place(x = 230, y = 100)
-    except:pass
-    _next_ = ImageTk.PhotoImage(file = 'imgs/super.png')
-    images = [_next_]
-    images = ['imgs/super.png']
+    #images = ['imgs/super.png']
     sound_track = None
+    images = []
     def __init__(self):
         root.geometry('850x600')
         root.title("Untitled - Skeleton 2D Beta")
@@ -69,10 +54,13 @@ class Skeleton:
         self.menuBar.add_cascade(label = "Help", menu = self.HelpMenu)
 
         self.widgets()
-        root.config (menu = self.menuBar)
+        root.config(menu = self.menuBar)
         root.bind('<F1>', lambda x:[self.Use])
         self.file = None
- 
+        img = PhotoImage('imgs\\super.png')
+        self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450)
+        self.img_win.place(x = 100, y = 100)
+
         self.FPS = IntVar()
         fps_label = ttk.LabelFrame(root, text = "fps", width = 100, height = 53)
         fps_label.place(x = 340, y = 7)
@@ -83,7 +71,7 @@ class Skeleton:
     def comingsoon(self):#for coming soon features that are not yet included
         showinfo("HAHA, see you", "i'm still working on it, coming soon")
 
-    def Valid_pic(self, filename):
+    def get_pic_size(self, filename):
         with open(filename, 'rb') as img:
             img.seek(163)
             a = img.read(2)
@@ -103,8 +91,9 @@ class Skeleton:
         else:
             try:
                 f = open(self.file, 'w+')
-                self.images = data
-            except Exception as e: showinfo("An Error Occured", e)
+                self.images.append(f)
+                self.n = self.images.index(f)
+            except Exception as e:showinfo("An Error Occured", e)
 
     def New(self):
         root.title("Untitled - Skeleton2D Beta")
@@ -116,11 +105,10 @@ class Skeleton:
         if self.file == '':
             self.file = None
         else:
-            root.title (os.path.basename(self.file).replace('.spf', '') + " - Skeleton2D Beta")
+            root.title(os.path.basename(self.file).replace('.top', '') + " - Skeleton2D Beta")
             try:
                 file = open(self.file, "r")
-                data  = eval(file)
-                self.images = data
+                self.images  = eval(file)
                 #file.close()
             except FileNotFoundError:
                 showinfo("ALERT", "Hey, you didn't open a file")
@@ -130,11 +118,10 @@ class Skeleton:
         if self.file == '':
             self.file == None
         else:
-           root.title(os.path.basename(self.file).replace('.spf', '') + "- Skeleton2D Beta")
+           root.title(os.path.basename(self.file).replace('.top', '') + "- Skeleton2D Beta")
            with open(self.file, 'w+') as f:
-               data = str(images)
-               for i in progress_:
-                   f.write(data)
+               data = str(self.images)
+               f.write(data)
                f.close()
 
     def About(self):showinfo('About', " C. Copyleft: Praise' desktop")
@@ -157,8 +144,14 @@ class Skeleton:
             #images.append(i)
         #for i in images:
             #anime.animate(images, 1)
-        #==================END OF REGION===============
+        #=================END OF REGION=====================
 
+
+    def hidefile(self, filename):
+        import win32file, win32con, win32api
+        flags = win32file.GetFileAttributesW(filename)
+        win32file.SetFileAttributes(filename, win32con.FILE_ATTRIBUTE_HIDDEN|flags)
+    
     def widgets(self):
         class Btn(Button):
             def __init__(self, master, **kw):
@@ -192,11 +185,9 @@ class Skeleton:
         btn2.place(x = 200, y = 1, anchor = 'nw')
         create_Tip(btn2, "View animation preview")
 
-        img = self._next_
-        img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450)
-        img_win.place(x = 100, y = 100)
+        self.img_win = ScrollableImage(root, image = None, scrollbarwidth = 16, width = 700, height = 450)
+        self.img_win.place(x = 100, y = 100)
 
 if __name__=='__main__':
     Skeleton()
-    #Skeleton().Valid_pic('star1.png')
     root.mainloop()
