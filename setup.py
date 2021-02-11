@@ -7,10 +7,13 @@ exe = Executable(
     )
 
 setup(
-    name = "Skeleton2D",
-    version = "0.0",
-    description = "Beta version",
+    name = "Solemn2D",
+    version = "1.0",
+    description = "Simple Animator app",
     executables = [exe]
     )
+
+
+
 
 
