@@ -26,23 +26,31 @@ class anime:
             screen = pygame.display.set_mode((size))
             logo = pygame.image.load('imgs\\skeleton.jpg')
             pygame.display.set_icon(logo)
-            pygame.display.set_caption("Project Preview - Skeleton 2D")
-            imagelist = []
-            for i in images:
-                imagelist.append(i)
+            pygame.display.set_caption("Project Preview - Solemn2D")
+            imagelist = [i for i in images]
+            sound = imagelist[0]
+            imagelist.remove(imagelist[0])
+            try:
+                pygame.mixer.music.load(sound)
+                pygame.mixer.music.play()
+            except:pass
             for i in imagelist:
-                img = pygame.image.load(i)
-                screen.blit(img, [0, 0])
+                try:
+                    img = pygame.image.load(i)
+                    screen.blit(img, [0, 0])
+                except:
+                    pass
                 sleep(fps)
                 pygame.display.update()
             while True:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
-                        #Skeleton()
                     pygame.display.update()
-        except pygame.error:
+        # except pygame.error:
+        except Exception as e:
             pass
+            
 
         """
         def Test(self):
