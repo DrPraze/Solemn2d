@@ -1,13 +1,13 @@
 from tkinter import *
 from tkinter.filedialog import *
 from tkinter.messagebox import *
-#from TkinterDnD2 import *
+from TkinterDnD2 import *
 from glob import glob #for testing purposes
 import pygame, os
 from time import sleep
 from tkinter import ttk
 from tooltip import *
-from PIL import ImageTk, ImageDraw
+from PIL import ImageTk, ImageDraw, ImageOps
 try:
     import Image
 except ImportError:
@@ -18,8 +18,8 @@ from time import sleep
 import smtplib, ssl
 import cv2, time
 
-#root = TkinterDnD.Tk()
-root = Tk()
+root = TkinterDnD.Tk()
+# root = Tk()
 
 class Main:
     menuBar = Menu(root)
@@ -30,7 +30,7 @@ class Main:
     images = [sound_track, 'imgs\\skeleton.jpg']
     File = "Untitled"
     def __init__(self):
-        root.geometry('850x600')
+        root.geometry('900x650')
         root.title("Untitled - Solemn2D 1.0")
         root.config(bg = 'white')
         try:root.wm_iconbitmap("imgs\\logo.ico")
@@ -40,6 +40,7 @@ class Main:
         self.FileMenu.add_command(label = "New project    Ctrl+N", command = self.New)
         self.FileMenu.add_command(label = "Open project   Ctrl+O", command = self.Open)
         self.FileMenu.add_command(label = "Save Project   Ctrl+S", command = self.save)
+        self.FileMenu.add_command(label = "SaveAs", command = self.SaveAs)
         self.FileMenu.add_command(label = "Export", command = self.export)
         self.FileMenu.add_command(label = "Exit           Ctrl+Q", command = self._quit_)
         
@@ -68,6 +69,8 @@ class Main:
         root.bind('<Control-s>', lambda x:[self.save()])
         root.bind('<Control-o>', lambda x:[self.Open()])
         root.bind('<Control-i>', lambda x:[self.Open_image()])
+
+        root.protocol('WM_DELETE_WINDOW', self._quit_)
 
         self.file = None
         self.n = 1
@@ -116,12 +119,12 @@ class Main:
 
     def Open(self):
         self.File = askopenfilename(title = "Open recent project - Solemn2D 1.0", defaultextension = " .top", filetypes = [("Tuple Of Pics" , "*.top") ])
-        if self.File == '':
+        if self.File == '' or self.File == None:
             self.File = None
         else:
-            root.title(os.path.basename(self.file).replace('.top', '') + " - Solemn2D 1.0")
+            root.title(os.path.basename(self.File).replace('.top', '') + " - Solemn2D 1.0")
             try:
-                file = open(self.file, "r")
+                file = open(self.File, "r")
                 file = file.read()
                 self.images = eval(file)
                 # print(self.images)
@@ -130,17 +133,34 @@ class Main:
                 showinfo("ALERT", "Hey, you didn't open a file")
 
     def save(self):         
-        self.File = asksaveasfilename(title = "Save Project - Solemn2D 1.0", initialfile = 'Untitled.top', defaultextension = " .top", filetypes = [("Tuple Of Pics", "* .top")])
-        if self.File == '':
-            self.File == None
+        if not os.path.exists(self.File):
+            self.File = asksaveasfilename(title = "Save Project - Solemn2D 1.0", initialfile = 'Untitled.top', defaultextension = " .top", filetypes = [("Tuple Of Pics", "* .top")])
+            if self.File == '':
+                self.File == "Untitled"
+            else:
+                root.title(os.path.basename(self.File).replace('.top', '') + "- Solemn2D 1.0")
+                with open(self.File, 'w+') as f:
+                    data = str(self.images)
+                    f.write(data)
+                    f.close()
         else:
-           root.title(os.path.basename(self.File).replace('.top', '') + "- Solemn2D 1.0")
-           with open(self.File, 'w+') as f:
-               data = str(self.images)
-               f.write(data)
-               f.close()
+            with open(self.File, 'w+') as f:
+                f.truncate()
+                f.write(str(self.images))
+                f.close
 
-    def About(self):showinfo('About Solemn2D', "Made by Praise James a.k.a ... \n Special thanks to: stackoverflow.com,\n pixabay.com for images\n Send Feedback with the send feedback\n button to help us improve Solemn2D")
+    def SaveAs(self):
+        self.File = askopenfilename(title = "Solemn2D 1.0 - Save As")
+        if self.File == '':
+            self.File == "Untitled"
+        else:
+            root.title(os.path.basename(self.File).replace('.top', '') + "- Solemn2D 1.0")
+            with open(self.File, 'w+') as f:
+                data = str(self.images)
+                f.write(data)
+                f.close()
+
+    def About(self):showinfo('About Solemn2D', "Made by Praise James a.k.a ... nevermine\n Special thanks to: stackoverflow.com,\n pixabay.com for images\n Send Feedback with the send feedback\n button to help us improve Solemn2D")
 
     def Use(self):
         file = open('how.txt', 'r')
@@ -153,7 +173,6 @@ class Main:
         fps_ = self.FPS.get()
         images = self.images
         anime.animate(images, float(1/fps_))
-        #...play music here...
         #====================TEST===========================
         #images = [i for i in glob('*.jpg')]
         #anime.animate(images, 1)
@@ -164,6 +183,19 @@ class Main:
         flags = win32file.GetFileAttributesW(filename)
         win32file.SetFileAttributes(filename, win32con.FILE_ATTRIBUTE_HIDDEN|flags)
     
+    def file_in(self, e):
+        try:
+            e = root.tk.splitlist(e.data)[0]
+            self.images.append(e)
+            self.n = self.images.index(e)
+            self.img_win.del_canvas()
+            img = Image.open(e)
+            img = ImageTk.PhotoImage(img)
+            self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+            self.img_win.place(x = 100, y = 100)
+        except Exception as E:
+            showinfo("An Error Occured", E)
+
     def widgets(self):
         global progress_bar, img_
         class Btn(Button):
@@ -179,9 +211,8 @@ class Main:
 
         progress_bar = ttk.Progressbar(root, orient = 'horizontal', length = 686, mode = 'determinate')
         progress_bar.place(x = 270, y = 620)
-        #root.drop_target_register(DND_FILES)
-        #root.dnd_bind('<<Drop>>', file_in)
-        #root.bind("<Button-3>", lambda x:remove(lb))
+        root.drop_target_register(DND_FILES)
+        root.dnd_bind('<<Drop>>', self.file_in)
 
         toolbar = Canvas(root, width = 400000, height = 70).pack()
 
@@ -214,6 +245,12 @@ class Main:
         blurbtn = Button(Frame, text = "Blur", command = self.blurimage)
         blurbtn.place(x = 73, y = 5)
         create_Tip(blurbtn, "Blur the image in the current frame")
+        mirrorbtn = Button(Frame, text = "Mirror", command = self.mirror)
+        mirrorbtn.place(x = 7, y = 40)
+        create_Tip(mirrorbtn, "Add mirror effect to an image")
+        loop = Checkbutton(Frame, text = "loop")
+        loop.place(x = 65, y = 40)
+        create_Tip(loop, "Don't worry  about this \nit doesn't do anything yet")
 
     def blurimage(self):
         img = self.images[self.n]
@@ -246,7 +283,7 @@ class Main:
         self.img_win.del_canvas()
         try:
             img = Image.open(self.images[self.n])
-        except IndexError:
+        except:
             pass
         try:
             img = ImageTk.PhotoImage(img)
@@ -335,24 +372,25 @@ class Main:
             height, width, layer = img.shape
             size = (width, height)
             imgs.append(img)
-        Title = title.replace('.', '') + '.avi'
+        Title = title.replace('.top', '')
+        print(Title)
         output = cv2.VideoWriter(Title, cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
         for i in range(len(imgs)):
             output.write(imgs[i])
         output.release()
-        os.popen(f'CMD /K ffmpeg -i ' + Title + ' -i ' + audio +' -map 0:0 -map 1:0 -c:v copy -c:a copy ' + title)
-        os.remove(Title)
+        if self.images[0] is not None:
+            os.popen(f'CMD /K ffmpeg -i ' + Title + ' -i ' + audio +' -map 0:0 -map 1:0 -c:v copy -c:a copy ' + title)
 
     def export(self):
         images = self.images[1:]
         fps = self.FPS.get()
         self.progressing()
-        title = self.File + '.avi'
+        title = self.File.replace('.avi', '(with Solemn 2D)') + '.avi'
         try:
             self.createVid(images, fps, title, audio = self.images[0])
         except TypeError:
             showerror("An Error Occured", "You'll need to import an audio to export the project")
-        showinfo("Success", "Your animation was exported succesfully")
+        showinfo("Success", "Your animation was exported succesfully exported to "+title)
 
     def duplicate(self):
         import shutil
@@ -367,6 +405,14 @@ class Main:
         self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
         self.img_win.place(x = 100, y = 100)
 
+    def mirror(self):
+        try:
+            img = Image.open(self.images[self.n])
+        except:pass
+        image = ImageOps.mirror(img)
+        im = self.images[self.n].replace('.', '') + '.jpg'
+        image = image.save(im)
+        self.images.append(im)
 
 if __name__=='__main__':
     Main()
