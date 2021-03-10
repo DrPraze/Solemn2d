@@ -19,7 +19,6 @@ import smtplib, ssl
 import cv2, time
 
 root = TkinterDnD.Tk()
-# root = Tk()
 
 class Main:
     menuBar = Menu(root)
