@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter.filedialog import *
 from tkinter.messagebox import *
 from TkinterDnD2 import *
-from glob import glob #for testing purposes
+from glob import glob
 import pygame, os
 from time import sleep
 from tkinter import ttk
@@ -17,9 +17,9 @@ from animator import anime
 from time import sleep
 import smtplib, ssl
 import cv2, time
+from pydub import AudioSegment
 
 root = TkinterDnD.Tk()
-
 class Main:
     menuBar = Menu(root)
     FileMenu = Menu(menuBar, tearoff = 0)
@@ -68,6 +68,8 @@ class Main:
         root.bind('<Control-s>', lambda x:[self.save()])
         root.bind('<Control-o>', lambda x:[self.Open()])
         root.bind('<Control-i>', lambda x:[self.Open_image()])
+        root.bind('<Motion>', lambda x:[self.coord()])
+        root.bind('<ButtonRelease-1>', lambda x:[self.update_frame()])
 
         root.protocol('WM_DELETE_WINDOW', self._quit_)
 
@@ -84,9 +86,28 @@ class Main:
     def _quit_(self):
         if askokcancel("Exit", "Are you sure you want to quit?"):
             root.destroy()
-    
-    def comingsoon(self):#for coming soon features that are not yet included
-        showinfo("Very Sorry", "This is the version 1.0 of this app,\n you can check for the latest verison\n which should have this feature with the\n version button in the help button")
+
+    def coord(self):
+        x, y = root.winfo_pointerx(), root.winfo_pointery()
+        return list((x, y))
+        print(x, y)
+
+    def update_frame(self):
+        if self.coord()[0]>= 225 and self.coord()[1] >= 0:#work on this area
+            self.n = self.navFrame.get()
+            self.img_win.del_canvas()
+            try:
+                img = Image.open(self.images[self.n])
+            except:
+                pass
+            try:
+                img = ImageTk.PhotoImage(img)
+                self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+                self.img_win.place(x = 130, y = 100)
+            except UnboundLocalError:
+                pass
+
+    def comingsoon(self):showinfo("Very Sorry", "This feature is not available for this version of the app,\n you can check for the latest verison with the\n version button in the help menu")
 
     def Open_image(self):
         try:
@@ -102,19 +123,21 @@ class Main:
                 img = Image.open(self.file)
                 img = ImageTk.PhotoImage(img)
                 self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
-                self.img_win.place(x = 100, y = 100)
+                self.img_win.place(x = 130, y = 100)
+                self.update_nav()
             except Exception as e:
                 showinfo("An Error Occured", e)
 
     def New(self):
         root.title("Untitled - Solemn2D 1.0")
         self.file = None
-        self.images = [sound_track, 'imgs\\skeleton.jpg']
+        self.images = [self.sound_track, 'imgs\\skeleton.jpg']
         self.img_win.del_canvas()
         img = Image.open('imgs\\skeleton.jpg')
         img = ImageTk.PhotoImage(img)
         self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
-        self.img_win.place(x = 100, y = 100)
+        self.img_win.place(x = 130, y = 100)
+        self.update_nav()
 
     def Open(self):
         self.File = askopenfilename(title = "Open recent project - Solemn2D 1.0", defaultextension = " .top", filetypes = [("Tuple Of Pics" , "*.top") ])
@@ -128,6 +151,7 @@ class Main:
                 self.images = eval(file)
                 # print(self.images)
                 # file.close()
+                self.update_nav()
             except FileNotFoundError:
                 showinfo("ALERT", "Hey, you didn't open a file")
 
@@ -140,7 +164,7 @@ class Main:
                 root.title(os.path.basename(self.File).replace('.top', '') + "- Solemn2D 1.0")
                 with open(self.File, 'w+') as f:
                     data = str(self.images)
-                    f.write(data)
+                    f.write(data)                                                                                                                                                                                                                           
                     f.close()
         else:
             with open(self.File, 'w+') as f:
@@ -191,12 +215,64 @@ class Main:
             img = Image.open(e)
             img = ImageTk.PhotoImage(img)
             self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
-            self.img_win.place(x = 100, y = 100)
+            self.img_win.place(x = 130, y = 100)
+            self.update_nav()
         except Exception as E:
             showinfo("An Error Occured", E)
+    class Sound:
+        """class for sound editing"""
+        def __init__(self):
+            try:
+                self.track = AudioSegment.from_mp3(self.images[0])
+            except:pass
+            # stack and queue are arrays used for the undo/redo functionality. 
+            self.queue = []
+            self.stack = []
+    
+        def save(self):
+            save_path = asksaveasfilename(initialdir = "/home/", title = "Where do you want to save the modified file?", filetypes = (("mp3 files","*.mp3"), ("all files","*.*")))
+            self.track.export(save_path, bitrate = "320k",format = "mp3")
+        
+        def reverse(self):
+            self.stack.append(self.track)
+            self.track = self.track.reverse()
+            self.images[0] = self.track
 
+        def checkLength(self):return self.track.duration_seconds
+
+        def mergeTracks(self):
+            self.stack.append(self.track)
+            self.filePath = askopenfilename(initialdir = "/home/", title = "What file do you want to import?", filetypes = (("mp3 files","*.mp3"),("all files","*.*")))
+            self.mergeTrack = AudioSegment.from_mp3(self.filePath)
+            self.track = self.track + self.mergeTrack
+
+        def gapMerge(self):
+            self.stack.append(self.track)
+            self.filePath = tkFileDialog.askopenfilename(initialdir = "/home/", title = "What file do you want to import?", filetypes = (("mp3 files","*.mp3"),("all files","*.*")))
+            self.mergeTrack = AudioSegment.from_mp3(self.filePath)
+            self.track = self.track + AudioSegment.silent(duration = 10000) + self.mergeTrack
+
+        def repeat(self):
+            self.stack.append(self.track)
+            self.track = self.track*2
+        
+        def overlay(self):
+            self.stack.append(self.track)
+            self.filePath = askopenfilename(initialdir = "/home/", title = "What file do you want to import?", filetypes = (("mp3 files","*.mp3"),("all files","*.*")))
+            self.overlayTrack = AudioSegment.from_mp3(self.filePath)
+            self.track = self.track.overlay(self.overlayTrack)
+
+        def undo(self):
+            self.queue.insert(0, self.track)
+            self.track = self.stack.pop()
+    
+        def redo(self):
+            self.stack.append(self.track)
+            self.track = self.queue[0]
+            self.queue.pop(0)
+            
     def widgets(self):
-        global progress_bar, img_
+        global progress_bar, img_, Frame
         class Btn(Button):
             def __init__(self, master, **kw):
                 Button.__init__(self, master = master, **kw)
@@ -234,22 +310,23 @@ class Main:
         img = Image.open('imgs\\skeleton.jpg')
         img = ImageTk.PhotoImage(img)
         self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
-        self.img_win.place(x = 100, y = 100)
+        self.img_win.place(x = 130, y = 100)
 
-        Frame = ttk.LabelFrame(root, text = "Extras", width = 120, height = 300)
-        Frame.place(x = 900, y = 80)
+        Frame = ttk.LabelFrame(root, text = "Extras", width = 350, height = 60)
+        Frame.place(x = 500, y = 5)
         drawbtn = Button(Frame, text = "Sketch", command = self.drawimage)
         drawbtn.place(x = 5, y = 5)
         create_Tip(drawbtn, "Turn the current frame pic into a sketch")
         blurbtn = Button(Frame, text = "Blur", command = self.blurimage)
-        blurbtn.place(x = 73, y = 5)
+        blurbtn.place(x = 60, y = 5)
         create_Tip(blurbtn, "Blur the image in the current frame")
         mirrorbtn = Button(Frame, text = "Mirror", command = self.mirror)
-        mirrorbtn.place(x = 7, y = 40)
+        mirrorbtn.place(x = 115, y = 5)
         create_Tip(mirrorbtn, "Add mirror effect to an image")
         loop = Checkbutton(Frame, text = "loop")
-        loop.place(x = 65, y = 40)
+        loop.place(x = 170, y = 5)
         create_Tip(loop, "Don't worry  about this \nit doesn't do anything yet")
+        self.update_nav()
 
     def blurimage(self):
         img = self.images[self.n]
@@ -412,6 +489,12 @@ class Main:
         im = self.images[self.n].replace('.', '') + '.jpg'
         image = image.save(im)
         self.images.append(im)
+
+    def update_nav(self):
+        self.navFrame = Scale(Frame, from_ = 1, to = len(self.images)-1, orient = HORIZONTAL)
+        self.navFrame.place(x = 225, y = 0)
+        create_Tip(self.navFrame, "Navigate through frames by dragging")
+
 
 if __name__=='__main__':
     Main()
