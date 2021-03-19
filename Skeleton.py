@@ -14,12 +14,16 @@ except ImportError:
     from PIL import Image
 from scrollimage import ScrollableImage
 from animator import anime
-from time import sleep
 import smtplib, ssl
 import cv2, time
 from pydub import AudioSegment
+import soundfile as sf
+import numpy as np
+import librosa
+from tkinter.colorchooser import askcolor
 
 root = TkinterDnD.Tk()
+pygame.init()
 class Main:
     menuBar = Menu(root)
     FileMenu = Menu(menuBar, tearoff = 0)
@@ -68,7 +72,7 @@ class Main:
         root.bind('<Control-s>', lambda x:[self.save()])
         root.bind('<Control-o>', lambda x:[self.Open()])
         root.bind('<Control-i>', lambda x:[self.Open_image()])
-        root.bind('<Motion>', lambda x:[self.coord()])
+        # root.bind('<Motion>', lambda:self.coord())
         root.bind('<ButtonRelease-1>', lambda x:[self.update_frame()])
 
         root.protocol('WM_DELETE_WINDOW', self._quit_)
@@ -86,14 +90,14 @@ class Main:
     def _quit_(self):
         if askokcancel("Exit", "Are you sure you want to quit?"):
             root.destroy()
+            pygame.quit()
 
     def coord(self):
         x, y = root.winfo_pointerx(), root.winfo_pointery()
-        return list((x, y))
-        print(x, y)
+        return x, y
 
     def update_frame(self):
-        if self.coord()[0]>= 225 and self.coord()[1] >= 0:#work on this area
+        if self.coord()[0]>= 775 and self.coord()[1] >= 100:#work on this area
             self.n = self.navFrame.get()
             self.img_win.del_canvas()
             try:
@@ -102,14 +106,15 @@ class Main:
                 pass
             try:
                 img = ImageTk.PhotoImage(img)
-                self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+                self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450, line_width = self.line_width)
                 self.img_win.place(x = 130, y = 100)
+                self.img_win.setup(self.line_width, self.pen_button)
             except UnboundLocalError:
                 pass
 
     def comingsoon(self):showinfo("Very Sorry", "This feature is not available for this version of the app,\n you can check for the latest verison with the\n version button in the help menu")
 
-    def Open_image(self):
+    def Open_image(self): 
         try:
             self.file = askopenfilename(title = "Open image - Solemn2D 1.0", defaultextension = " .top", filetypes = [("All Files", "*.*")])
         except FileNotFoundError:pass
@@ -122,8 +127,9 @@ class Main:
                 self.img_win.del_canvas()
                 img = Image.open(self.file)
                 img = ImageTk.PhotoImage(img)
-                self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+                self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450)
                 self.img_win.place(x = 130, y = 100)
+                self.img_win.setup(self.line_width, self.pen_button)
                 self.update_nav()
             except Exception as e:
                 showinfo("An Error Occured", e)
@@ -135,8 +141,9 @@ class Main:
         self.img_win.del_canvas()
         img = Image.open('imgs\\skeleton.jpg')
         img = ImageTk.PhotoImage(img)
-        self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+        self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450)
         self.img_win.place(x = 130, y = 100)
+        self.img_win.setup(self.line_width, self.pen_button)
         self.update_nav()
 
     def Open(self):
@@ -214,65 +221,68 @@ class Main:
             self.img_win.del_canvas()
             img = Image.open(e)
             img = ImageTk.PhotoImage(img)
-            self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+            self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450, line_width = 10)
             self.img_win.place(x = 130, y = 100)
             self.update_nav()
         except Exception as E:
             showinfo("An Error Occured", E)
-    class Sound:
-        """class for sound editing"""
-        def __init__(self):
-            try:
-                self.track = AudioSegment.from_mp3(self.images[0])
-            except:pass
-            # stack and queue are arrays used for the undo/redo functionality. 
-            self.queue = []
-            self.stack = []
-    
-        def save(self):
-            save_path = asksaveasfilename(initialdir = "/home/", title = "Where do you want to save the modified file?", filetypes = (("mp3 files","*.mp3"), ("all files","*.*")))
-            self.track.export(save_path, bitrate = "320k",format = "mp3")
-        
-        def reverse(self):
-            self.stack.append(self.track)
-            self.track = self.track.reverse()
-            self.images[0] = self.track
-
-        def checkLength(self):return self.track.duration_seconds
-
-        def mergeTracks(self):
-            self.stack.append(self.track)
-            self.filePath = askopenfilename(initialdir = "/home/", title = "What file do you want to import?", filetypes = (("mp3 files","*.mp3"),("all files","*.*")))
-            self.mergeTrack = AudioSegment.from_mp3(self.filePath)
-            self.track = self.track + self.mergeTrack
-
-        def gapMerge(self):
-            self.stack.append(self.track)
-            self.filePath = tkFileDialog.askopenfilename(initialdir = "/home/", title = "What file do you want to import?", filetypes = (("mp3 files","*.mp3"),("all files","*.*")))
-            self.mergeTrack = AudioSegment.from_mp3(self.filePath)
-            self.track = self.track + AudioSegment.silent(duration = 10000) + self.mergeTrack
-
-        def repeat(self):
-            self.stack.append(self.track)
-            self.track = self.track*2
-        
-        def overlay(self):
-            self.stack.append(self.track)
-            self.filePath = askopenfilename(initialdir = "/home/", title = "What file do you want to import?", filetypes = (("mp3 files","*.mp3"),("all files","*.*")))
-            self.overlayTrack = AudioSegment.from_mp3(self.filePath)
-            self.track = self.track.overlay(self.overlayTrack)
-
-        def undo(self):
-            self.queue.insert(0, self.track)
-            self.track = self.stack.pop()
-    
-        def redo(self):
-            self.stack.append(self.track)
-            self.track = self.queue[0]
-            self.queue.pop(0)
-            
+       
     def widgets(self):
         global progress_bar, img_, Frame
+        try:self.track = AudioSegment.from_mp3(self.images[0])
+        except:pass
+        class Sound:
+            """class for sound editing"""
+            def __init__(self):
+                try:
+                    self.track = AudioSegment.from_mp3(self.images[0])
+                except:pass
+                # stack and queue are arrays used for the undo/redo functionality. 
+                self.queue = []
+                self.stack = []
+    
+            def save(self):
+                save_path = asksaveasfilename(initialdir = "/home/", title = "Where do you want to save the modified file?", filetypes = (("mp3 files","*.mp3"), ("all files","*.*")))
+                self.track.export(save_path, bitrate = "320k",format = "mp3")
+        
+            def reverse(self):
+                self.stack.append(self.track)
+                self.track = self.track.reverse()
+                self.images[0] = self.track
+
+            def checkLength(self):return self.track.duration_seconds
+
+            def mergeTracks(self):
+                self.stack.append(self.track)
+                self.filePath = askopenfilename(initialdir = "/home/", title = "What file do you want to import?", filetypes = (("mp3 files","*.mp3"),("all files","*.*")))
+                self.mergeTrack = AudioSegment.from_mp3(self.filePath)
+                self.track = self.track + self.mergeTrack
+
+            def gapMerge(self):
+                self.stack.append(self.track)
+                self.filePath = tkFileDialog.askopenfilename(initialdir = "/home/", title = "What file do you want to import?", filetypes = (("mp3 files","*.mp3"),("all files","*.*")))
+                self.mergeTrack = AudioSegment.from_mp3(self.filePath)
+                self.track = self.track + AudioSegment.silent(duration = 10000) + self.mergeTrack
+
+            def repeat(self):
+                self.stack.append(self.track)
+                self.track = self.track*2
+        
+            def overlay(self):
+                self.stack.append(self.track)
+                self.filePath = askopenfilename(initialdir = "/home/", title = "What file do you want to import?", filetypes = (("mp3 files","*.mp3"),("all files","*.*")))
+                self.overlayTrack = AudioSegment.from_mp3(self.filePath)
+                self.track = self.track.overlay(self.overlayTrack)
+
+            def undo(self):
+                self.queue.insert(0, self.track)
+                self.track = self.stack.pop()
+    
+            def redo(self):
+                self.stack.append(self.track)
+                self.track = self.queue[0]
+                self.queue.pop(0)
+        
         class Btn(Button):
             def __init__(self, master, **kw):
                 Button.__init__(self, master = master, **kw)
@@ -284,49 +294,202 @@ class Main:
             def on_enter(self, e): self['background'] = self['activebackground']
             def on_leave(self, e): self['background'] = self.defaultBackground
 
-        progress_bar = ttk.Progressbar(root, orient = 'horizontal', length = 686, mode = 'determinate')
-        progress_bar.place(x = 270, y = 620)
+        status_bar = Frame(root, width= 4000, height = 60)
+        status_bar.place(x = 0, y = root.winfo_height())
+        progress_bar = ttk.Progressbar(status_bar, orient = 'horizontal', length = 168, mode = 'determinate')
+        progress_bar.place(x = 800, y = 7)#place(x = 670, y = 500)
         root.drop_target_register(DND_FILES)
         root.dnd_bind('<<Drop>>', self.file_in)
 
-        toolbar = Canvas(root, width = 400000, height = 70).pack()
+        toolbar = Canvas(root, width = 400000, height = 80).pack()
 
-        frame = ttk.LabelFrame(root, text = "Tools", width = 340, height = 53)
+        frame = ttk.LabelFrame(root, text = "Tools", width = 340, height = 60)
         frame.place(x = 20, y = 7)
 
-        btn0 = Btn(frame, text = "Prev", width = 5, height = 0, font = ('Calibri', 12), bg = '#000', foreground = '#FFF', activebackground = 'grey', highlightbackground = "#bce8f1", highlightthickness = 0.5, borderwidth = "2", command = self.prev_frame)
+        btn0 = Btn(frame, text = "Prev", width = 7, height = 0, font = ('Calibri', 12), bg = '#000', foreground = '#FFF', activebackground = 'grey', highlightbackground = "#bce8f1", highlightthickness = 0.5, borderwidth = "2", command = self.prev_frame)
         btn0.place(x=30, y=1, anchor = 'nw')
         create_Tip(btn0, "Go to previous frame")
-        btn1 = Btn(frame, text = "Next", width = 5, height = 0, font = ('Calibri', 12), bg = '#000', foreground = '#FFF',  activebackground = 'grey', highlightbackground = "#bce8f1", highlightthickness = 0.5,borderwidth = "2", command = self.next_frame)
+        btn1 = Btn(frame, text = "Next", width = 7, height = 0, font = ('Calibri', 12), bg = '#000', foreground = '#FFF',  activebackground = 'grey', highlightbackground = "#bce8f1", highlightthickness = 0.5,borderwidth = "2", command = self.next_frame)
         btn1.place(x=100, y=1, anchor = 'nw')
         create_Tip(btn1, "Go to the next frame")
         btn2 = Btn(frame, text = "Delete", width = 7, height = 0, font = ("Calibri", 12), bg = "#000", foreground = '#fff', activebackground = 'grey', highlightbackground = "#bce8f1", highlightthickness = 0.5,borderwidth = "2", command = self.del_frame)
         btn2.place(x = 180, y = 1, anchor = 'nw')
+        create_Tip(btn2, "delete the current frame")
         btn3 = Btn(frame, text = "Preview", width = 7, height = 0, font = ("Calibri", 12), bg = "#000", foreground = '#fff', activebackground = 'grey', highlightbackground = "#bce8f1", highlightthickness = 0.5,borderwidth = "2", command = self.Animate)
         btn3.place(x = 258, y = 1, anchor = 'nw')
-        create_Tip(btn2, "delete the current frame")
         create_Tip(btn3, "View animation preview")
 
         img = Image.open('imgs\\skeleton.jpg')
         img = ImageTk.PhotoImage(img)
-        self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+        self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450, line_width = 10)
         self.img_win.place(x = 130, y = 100)
+        self.img_win.save('test.png')
 
         Frame = ttk.LabelFrame(root, text = "Extras", width = 350, height = 60)
-        Frame.place(x = 500, y = 5)
-        drawbtn = Button(Frame, text = "Sketch", command = self.drawimage)
+        Frame.place(x = 500, y = 7)
+        drawbtn = Button(Frame, text = "Sketch", width = 5, command = self.drawimage)
         drawbtn.place(x = 5, y = 5)
         create_Tip(drawbtn, "Turn the current frame pic into a sketch")
-        blurbtn = Button(Frame, text = "Blur", command = self.blurimage)
+        blurbtn = Button(Frame, text = "Blur", width = 5, command = self.blurimage)
         blurbtn.place(x = 60, y = 5)
         create_Tip(blurbtn, "Blur the image in the current frame")
-        mirrorbtn = Button(Frame, text = "Mirror", command = self.mirror)
+        mirrorbtn = Button(Frame, text = "Mirror", width = 5, command = self.mirror)
         mirrorbtn.place(x = 115, y = 5)
         create_Tip(mirrorbtn, "Add mirror effect to an image")
         loop = Checkbutton(Frame, text = "loop")
         loop.place(x = 170, y = 5)
         create_Tip(loop, "Don't worry  about this \nit doesn't do anything yet")
         self.update_nav()
+
+        def Merge(self):
+            Sound.mergeTracks(self.track)
+            self.durLabel['text'] = "Track Duration: " + str(int(sound.checkLength(self.tr))) + "s"
+        
+        def gapmerge(self):
+            Sound.gapMerge(self.track)
+            self.durLabel['text'] = "Track Duration: " + str(int(Sound.checkLength(askopenfilename(title = "Open another sound file for merge")))) + "s"
+
+        def repeat(self):
+            Sound.repeat(self.track)
+            self.durLabel['text'] = "Track Duration: " + str(int(Sound.checkLength(self.track))) + "s"
+
+        def overlayTrack(self):
+            Sound.overlay(self.track)
+            self.durLabel['text'] = "Track Duration: " + str(int(sound.checkLength(self.tr))) + "s"
+
+
+        self.sound_frame = ttk.LabelFrame(root, text = "Sound", width = 130, height = 350)
+        self.sound_frame.place(x = 870, y = 100)
+
+        self.reverse = Button(self.sound_frame, text="Reverse Track", width = 16, command = lambda: Sound.reverse(self.track), relief = GROOVE)
+        self.reverse.place(x=2,y=2)
+        create_Tip(self.reverse, "Reverse the track(turn the\ntrack backwards)")
+        merge = Button(self.sound_frame, text="Gapless Merge", width = 16, command = lambda: self.Merge(), relief = GROOVE)
+        merge.place(x = 2, y=32)
+
+        self.gapMerge = Button(self.sound_frame, text = "Merge with Gap", width = 16, command = lambda: self.gapmerge(), relief = GROOVE)
+        self.gapMerge.place(x=2,y=62)
+        create_Tip(self.gapMerge, "Merge two audio files together with a gap between them")
+
+        self.repeat = Button(self.sound_frame, text = "Repeat", width = 16, command = lambda: self.repeat())
+        self.repeat.place(x=2,y=92)
+        create_Tip(self.repeat, "Repeat track once again")
+
+        self.overlay = Button(self.sound_frame, text = "Overlay", width = 16, command = lambda: self.overlayTrack())
+        self.overlay.place(x=2,y=122)
+        create_Tip(self.overlay, "Overlay two tracks together")
+
+        self.savesound = Button(self.sound_frame, text="Save changes", width = 16, command = lambda: Sound.save(self.track), relief = GROOVE) 
+        self.savesound.place(x=2,y=152)
+        create_Tip(self.savesound, "Save current changes\n made on sound")
+
+        self.undo = Button(self.sound_frame, text = "Undo", command = lambda: sound.undo(self.track), relief = GROOVE)
+        self.undo.place(x=22, y=182)
+        create_Tip(self.undo, "Undo changes made on sound")
+
+        self.redo = Button(self.sound_frame, text = "Redo", command = lambda: sound.redo(self.track), relief = GROOVE)
+        self.redo.place(x=65, y=182)
+        create_Tip(self.redo, "Redo changes made on sound")
+
+        self.play = Button(self.sound_frame, text = "Play", command = self.play, relief=GROOVE)
+        self.play.place(x=22, y=212)
+
+        self.stop = Button(self.sound_frame, text = "Stop", command = self.stop, relief = GROOVE)
+        self.stop.place(x =65, y=212)
+        
+        self.maxtempo = Button(self.sound_frame, text = "Max tempo", command = self.Max_tempo, relief = GROOVE)
+        self.maxtempo.place(x=32, y=242)
+
+        self.change_voice_label = ttk.LabelFrame(self.sound_frame, text = "Change voice", width = 140, height = 120)
+        self.change_voice_label.place(x = 2, y = 272)
+        self.shift = IntVar()
+        self.change = Spinbox(self.change_voice_label, from_ = -150, to = 150, width  = 5, bd= 2, textvariable = self.shift)
+        self.change.place(x = 2, y = 2)
+        create_Tip(self.change, "Set the change rate of the voice")
+        self.Change_voice = Button(self.change_voice_label, text = "Change", command = lambda :self.change_voice(self.shift))
+        self.Change_voice.place(x = 70, y =2)
+        self.durLabel = Label(self.sound_frame, text = "Track duration: 0")
+        self.update_sound_editing_tools()
+
+        self.image_frame = ttk.LabelFrame(root, text = "Edit Image", width = 120, height= 280)
+        self.image_frame.place(x = 2, y = 100)
+        self.pen_button = Button(self.image_frame, width = 12, text='pen', command=None)
+        self.pen_button.grid(row=0, column=0)
+
+        self.brush_button = Button(self.image_frame, width = 12, text='brush', command=self.brush)
+        self.brush_button.grid(row=1, column=0)
+
+        self.color = None
+        self.color_button = Button(self.image_frame, width = 12, text='color', command=self.Color)
+        self.color_button.grid(row=2, column=0)
+
+        self.eraser_button = Button(self.image_frame, width = 12, text='eraser', command=None)
+        self.eraser_button.grid(row=3, column=0)
+
+        self.choose_size_button = Scale(self.image_frame, from_=1, to=10, orient=HORIZONTAL)
+        self.choose_size_button.grid(row=4, column=0)
+        self.line_width = self.choose_size_button.get()
+        self.img_win.setup(self.line_width, self.pen_button, color = self.color)
+
+    def Color(self):
+        self.color = askcolor(title = "select a color")[1]
+        self.eraser_on = False
+        self.color_button.config(bg = self.color)
+        self.img_win.setup(self.line_width, self.pen_button, color = self.color)
+
+    def brush(self):
+        self.img_win.activate_button(self.brush_button)
+
+    def change_voice(self, shift):
+        y, sr = librosa.load(self.images[0])
+        b = librosa.effects.pitch_shift(y, sr, n_steps = shift)
+        progressing()
+        sf.write(self.title+'.wav', b, sr)
+
+    def Max_tempo(self):
+        src = self.images[0]
+        dst = 'in.wav'
+        sound = AudioSegment.from_mp3(src)
+        sound.export(dst, format = 'wav')
+        data, samplerate = sf.read("in.wav")
+        # print(data.shape)
+        # print(samplerate)
+
+        # plt.plot(data)
+        # plt.show()
+        samplerate = int(samplerate * 1.5)
+        self.progressing()
+
+        sf.write("out.wav", data, samplerate)
+        os.system("out.wav")
+
+    def stop(self):
+        pygame.mixer.music.stop()
+        self.play.config(text = "Play", command = self.play)
+    def resume(self):
+        pygame.mixer.music.unpause()
+        self.play.config(text = "Pause", command = self.pause)
+    def pause(self):
+        pygame.mixer.music.pause()
+        self.play.config(text="Resume", command = self.resume)
+    def play(self):
+        try:
+            pygame.mixer.music.load(self.images[0])
+            pygame.mixer.music.play(-1)
+            self.play.config(text = "Pause", command = self.pause)
+        except Exception as e:
+            showerror("An error occured", e)
+
+    def update_sound_editing_tools(self):
+        if self.images[0]==None:
+            self.reverse.config(state=DISABLED)
+            self.savesound.config(state = DISABLED)
+            self.undo.config(state=DISABLED)
+            self.redo.config(state = DISABLED)
+            self.repeat.config(state = DISABLED)
+            self.overlay.config(state = DISABLED)
+        else:
+            pass
 
     def blurimage(self):
         img = self.images[self.n]
@@ -363,7 +526,7 @@ class Main:
             pass
         try:
             img = ImageTk.PhotoImage(img)
-            self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+            self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450, line_width = 10)
             self.img_win.place(x = 100, y = 100)
         except UnboundLocalError:
             pass
@@ -377,7 +540,7 @@ class Main:
             pass
         try:
             img = ImageTk.PhotoImage(img)
-            self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+            self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450, line_width = 10)
             self.img_win.place(x = 100, y = 100)
         except UnboundLocalError:
             pass
@@ -429,8 +592,7 @@ class Main:
                     server.login(email_, password_)
                     for i in file.readlines():
                         server.send_mail(email_, 'praisejames011@gmail.com', message_) 
-            except Exception as e:
-                showerror("An Error Occured", e)
+            except Exception as e:showerror("An Error Occured", e)
 
         btn = Button(pop, text = 'Send', command = send)
         btn.place(x = 170, y = 150)
@@ -439,7 +601,11 @@ class Main:
         create_Tip(password, 'Enter your password here')
         create_Tip(message, 'Enter your feedback')
 
-    def FetchSound(self):self.images[0] = askopenfilename(title = "Open Sound Track - Solemn2D 1.0")
+    def FetchSound(self):
+        self.images[0] = askopenfilename(title = "Open Sound Track - Solemn2D 1.0")
+        try:self.track = AudioSegment.from_mp3(self.images[0])
+        except:pass
+        self.update_sound_editing_tools()
 
     def createVid(self, images, fps, title, audio):
         imgs = []
@@ -461,7 +627,7 @@ class Main:
         images = self.images[1:]
         fps = self.FPS.get()
         self.progressing()
-        title = self.File.replace('.avi', '(with Solemn 2D)') + '.avi'
+        title = self.File.replace('.avi', '') + '.avi'
         try:
             self.createVid(images, fps, title, audio = self.images[0])
         except TypeError:
@@ -478,7 +644,7 @@ class Main:
         self.img_win.del_canvas()
         img = Image.open(new)
         img = ImageTk.PhotoImage(img)
-        self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 770, height = 450)
+        self.img_win = ScrollableImage(root, image = img, scrollbarwidth = 16, width = 700, height = 450, line_width = 10)
         self.img_win.place(x = 100, y = 100)
 
     def mirror(self):
@@ -494,7 +660,6 @@ class Main:
         self.navFrame = Scale(Frame, from_ = 1, to = len(self.images)-1, orient = HORIZONTAL)
         self.navFrame.place(x = 225, y = 0)
         create_Tip(self.navFrame, "Navigate through frames by dragging")
-
 
 if __name__=='__main__':
     Main()
