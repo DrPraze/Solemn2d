@@ -31,18 +31,18 @@ class Main:
     File = "Untitled"
     def __init__(self):
         root.geometry('900x650')
-        root.title("Untitled - Solemn2D 1.0")
+        root.title("Untitled - Solemn2D 1.4")
         root.config(bg = 'white')
         try:root.wm_iconbitmap("imgs\\logo.ico")
         except:pass
         self.FileMenu.add_command(label = "Open Image", command = self.Open_image)
         self.FileMenu.add_command(label = "Import Sound", command = self.FetchSound)
-        self.FileMenu.add_command(label = "New project    Ctrl+N", command = self.New)
+        self.FileMenu.add_command(label = "New project     Ctrl+N", command = self.New)
         self.FileMenu.add_command(label = "Open project   Ctrl+O", command = self.Open)
-        self.FileMenu.add_command(label = "Save Project   Ctrl+S", command = self.save)
+        self.FileMenu.add_command(label = "Save Project     Ctrl+S", command = self.save)
         self.FileMenu.add_command(label = "SaveAs", command = self.SaveAs)
         self.FileMenu.add_command(label = "Export", command = self.export)
-        self.FileMenu.add_command(label = "Exit           Ctrl+Q", command = self._quit_)
+        self.FileMenu.add_command(label = "Exit                    Ctrl+Q", command = self._quit_)
         
         self.HelpMenu.add_command(label = "About ", command = self.About)
         self.HelpMenu.add_command(label = "How to use  F1", command = self.Use)
@@ -101,7 +101,7 @@ class Main:
 
     def Open_image(self): 
         try:
-            self.file = askopenfilename(title = "Open image - Solemn2D 1.0", defaultextension = " .top", filetypes = [("All Files", "*.*")])
+            self.file = askopenfilename(title = "Open image - Solemn2D 1.4", defaultextension = " .top", filetypes = [("All Files", "*.*")])
         except FileNotFoundError:pass
         if self.file == '':
             self.file = None
@@ -119,7 +119,7 @@ class Main:
                 showinfo("An Error Occured", e)
 
     def New(self):
-        root.title("Untitled - Solemn2D 1.0")
+        root.title("Untitled - Solemn2D 1.4")
         self.file = None
         self.images = [self.sound_track, 'imgs\\skeleton.jpg']
         self.img_win.del_canvas()
@@ -136,11 +136,11 @@ class Main:
             pass
 
     def Open(self):
-        self.File = askopenfilename(title = "Open recent project - Solemn2D 1.0", defaultextension = " .top", filetypes = [("Tuple Of Pics" , "*.top") ])
+        self.File = askopenfilename(title = "Open recent project - Solemn2D 1.4", defaultextension = " .top", filetypes = [("Tuple Of Pics" , "*.top") ])
         if self.File == '' or self.File == None:
             self.File = None
         else:
-            root.title(os.path.basename(self.File).replace('.top', '') + " - Solemn2D 1.0")
+            root.title(os.path.basename(self.File).replace('.top', '') + " - Solemn2D 1.4")
             try:
                 file = open(self.File, "r")
                 file = file.read()
@@ -152,11 +152,11 @@ class Main:
 
     def save(self):         
         if not os.path.exists(self.File):
-            self.File = asksaveasfilename(title = "Save Project - Solemn2D 1.0", initialfile = 'Untitled.top', defaultextension = " .top", filetypes = [("Tuple Of Pics", "* .top")])
+            self.File = asksaveasfilename(title = "Save Project - Solemn2D 1.4", initialfile = 'Untitled.top', defaultextension = " .top", filetypes = [("Tuple Of Pics", "* .top")])
             if self.File == '':
                 self.File == "Untitled"
             else:
-                root.title(os.path.basename(self.File).replace('.top', '') + "- Solemn2D 1.0")
+                root.title(os.path.basename(self.File).replace('.top', '') + "- Solemn2D 1.4")
                 with open(self.File, 'w+') as f:
                     data = str(self.images)
                     f.write(data)                                                                                                                                                                                                                           
@@ -168,11 +168,11 @@ class Main:
                 f.close
 
     def SaveAs(self):
-        self.File = askopenfilename(title = "Solemn2D 1.0 - Save As")
+        self.File = askopenfilename(title = "Solemn2D 1.4 - Save As")
         if self.File == '':
             self.File == "Untitled"
         else:
-            root.title(os.path.basename(self.File).replace('.top', '') + "- Solemn2D 1.8")
+            root.title(os.path.basename(self.File).replace('.top', '') + "- Solemn2D 1.4")
             with open(self.File, 'w+') as f:
                 data = str(self.images)
                 f.write(data)
@@ -223,7 +223,7 @@ class Main:
             """class for sound editing"""
             def __init__(self):
                 pass
-            def initiate(self):
+            def initiate(self): 
                 try:
                     self.track = AudioSegment.from_mp3(self.images[0])
                 except:pass
@@ -285,7 +285,8 @@ class Main:
 
         Sound.initiate
         self.status_bar = Canvas(root, width= 4000, height = 60)
-        self.status_bar.place(x = 0, y = root.winfo_height())
+        # self.status_bar.place(x = 0, y = root.winfo_height())
+        self.status_bar.pack(side="bottom", fill="both", expand=False)
         progress_bar = ttk.Progressbar(self.status_bar, orient = 'horizontal', length = 168, mode = 'determinate')
         progress_bar.place(x = 800, y = 7)#place(x = 670, y = 500)
         root.drop_target_register(DND_FILES)
@@ -352,7 +353,7 @@ class Main:
 
         self.reverse = Button(self.sound_frame, text="Reverse Track", width = 16, command = lambda: Sound.reverse(self.track), relief = GROOVE)
         self.reverse.place(x=2,y=2)
-        create_Tip(self.reverse, "Reverse the track(turn the\ntrack backwards)")
+        create_Tip(self.reverse, "Reverse the track(rewrite the\ntrack backwards)")
         self.merge = Button(self.sound_frame, text="Gapless Merge", width = 16, command = lambda: self.Merge(), relief = GROOVE)
         self.merge.place(x = 2, y=32)
 
@@ -426,47 +427,105 @@ class Main:
         self.del_sound.place(x = 2, y = 435)
         self.update_sound_editing_tools()
 
-        self.image_frame = ttk.LabelFrame(root, text = "Edit Image", width = 120, height= 500)
+        self.image_frame = ttk.LabelFrame(root, text = "Edit Image", width = 120, height= 440)
         self.image_frame.place(x = 2, y = 100)
         # self.pen_button = Button(self.image_frame, width = 12, text='pen', command=self.comingsoon)
         # self.pen_button.grid(row=0, column=0)
         self.brush_button = Button(self.image_frame, width = 14, text='brush', command=self.brush)
         self.brush_button.place(x = 5, y = 2)
+        create_Tip(self.brush_button, "Activate the brush")
 
         self.color = None
         self.color_button = Button(self.image_frame, width = 14, text='color', command=self.Color)
         self.color_button.place(x = 5, y = 32)
-
-        self.eraser_button = Button(self.image_frame, width = 14, text='eraser', command=self.erase)
-        self.eraser_button.place(x = 5, y = 62)
-
-        self.save_button= Button(self.image_frame, width = 14, text = "Save image", command=self.Save_image)
-        self.save_button.place(x = 5, y = 92)
-
-        self.undo_btn = Button(self.image_frame, width = 6, text = "Undo", command = self.comingsoon)
-        self.undo_btn.place(x = 5, y = 122)
-        self.redo_btn = Button(self.image_frame, width = 6, text = "Redo", command = self.comingsoon)
-        self.redo_btn.place(x = 60, y = 122)
+        create_Tip(self.color_button, "Select a color for color1")
 
         self.color2 = None
         self.color_btn2 = Button(self.image_frame, width = 14, text = 'color 2', command = self.Color2)
-        self.color_btn2.place(x = 5, y = 152)
+        self.color_btn2.place(x = 5, y = 62)
+        create_Tip(self.color_btn2, "Select a color for color2")
+
+        self.save_button= Button(self.image_frame, width = 14, text = "Save image", command=self.Save_image)
+        self.save_button.place(x = 5, y = 92)
+        create_Tip(self.save_button, "Save changes made to the current frame")
+
+        self.undo_btn = Button(self.image_frame, width = 6, text = "Undo", relief = GROOVE, command = self.img_win._undo_)
+        self.undo_btn.place(x = 5, y = 122)
+        create_Tip(self.undo_btn, "Undo changes made to the current frame")
+        self.redo_btn = Button(self.image_frame, width = 6, text = "Redo", relief = GROOVE, command = self.comingsoon)
+        self.redo_btn.place(x = 60, y = 122)
+        create_Tip(self.redo_btn, "Redo changes made to the current frame")
+
+        self.eraser_button = Button(self.image_frame, width = 14, text='eraser', command=self.erase)
+        self.eraser_button.place(x = 5, y = 152)
+        create_Tip(self.eraser_button, "Eraser")
 
         self.rect_btn = Button(self.image_frame, width = 14, text = "Rectangle", command = self.create_rect)
         self.rect_btn.place(x = 5, y = 182)
+        create_Tip(self.rect_btn, "Draw a rectangle in the frame")
 
-        # self.reset_button = Button(self.image_frame, width = 12, text = "reset", command = self.comingsoon)
-        # self.reset_button.grid(row = 4, column = 0)
+        self.circle_btn = Button(self.image_frame, width = 14, text = "Circle", command = self.create_circle)
+        self.circle_btn.place(x = 5, y = 212)
+        create_Tip(self.circle_btn, "Draw a circle in the frame")
 
-        self.choose_size_button = Scale(self.image_frame, from_=1, to=10, orient=HORIZONTAL)
-        self.choose_size_button.place(x = 2, y = 212)
+        self.line_btn = Button(self.image_frame, width = 14, text = 'Line', command = self.create_line)
+        self.line_btn.place(x = 5, y = 242)
+        create_Tip(self.line_btn, "Draw straight lines in the frame")
+
+        self.new_blank = Button(self.image_frame, width = 14, text = "New blank frame", command = self.NewBlankFrame)
+        self.new_blank.place(x = 5, y = 272)
+        create_Tip(self.new_blank, "Create a new blank frame")
+        self.clear_btn = Button(self.image_frame, width = 14, text = "clear frame", command = self.img_win.clear)
+        self.clear_btn.place(x = 5, y = 302)
+        create_Tip(self.clear_btn, "Clear the current frame to blank white")
+
+        self.invert_btn = Button(self.image_frame, width = 14,  text = "Invert colors", command = self.invert)
+        self.invert_btn.place(x = 5, y = 332)
+        create_Tip(self.invert_btn, "invert colors of current frame")
+        self.choose_size_button = Scale(self.image_frame, from_=0, to=10, orient=HORIZONTAL)
+        self.choose_size_button.place(x = 2, y = 362)
         self.line_width = self.choose_size_button.get()
         self.update_nav()
 
+    def invert(self):
+        try:
+            img = Image.open(self.images[self.n])
+        except:pass
+        image = ImageOps.invert(img)
+        im = self.images[self.n].replace('.png', '').replace('.jpg', '').replace('.bmp', '') + '.jpg'  
+        image = image.save(im)
+        self.images.append(im)
+
+    def NewBlankFrame(self):
+        self.img_win.del_canvas()
+        self.img_win = ScrollableImage(root, image = None, scrollbarwidth = 16, width = 700, height = 450, line_width = 10)
+        self.img_win.place(x = 130, y = 100)
+        self.img_win.clear()
+
     def create_rect(self):
-        self.img_win.drawrect(self.color, self.color2, self.line_width, root)
-        # root.bind('<ButtonRelease-1>', lambda x:[self.img_win.drawrect(self.color, self.color2, self.line_width, root)])
-        self.img_win.activate_button(self.rect_btn)
+        root.bind('<Button-1>', lambda x:[self.img_win.drawrect(self.color, self.color2, self.line_width, root)])
+        self.rect_btn.config(relief=SUNKEN)
+        self.brush_button.config(relief = RAISED)
+        self.eraser_button.config(relief = RAISED)
+        self.circle_btn.config(relief = RAISED)
+        self.line_btn.config(relief = RAISED)
+
+    def create_circle(self):
+        root.bind('<Button-1>', lambda x:[self.img_win.drawcircle(self.color, self.color2, self.line_width, root)])
+        self.circle_btn.config(relief = SUNKEN)
+        self.rect_btn.config(relief=RAISED)
+        self.brush_button.config(relief = RAISED)
+        self.eraser_button.config(relief = RAISED)
+        self.line_btn.config(relief = RAISED)
+
+    def create_line(self):
+        root.bind('<Button-1>', lambda x:[self.img_win.drawLine(self.color, self.line_width, root)])
+        self.line_btn.config(relief = SUNKEN)
+        self.circle_btn.config(relief = RAISED)
+        self.rect_btn.config(relief=RAISED)
+        self.brush_button.config(relief = RAISED)
+        self.eraser_button.config(relief = RAISED)
+
     def record_sound(self):
         try:
             frequency = self.frequency.get()
@@ -499,6 +558,10 @@ class Main:
         root.config(cursor="dot")
         self.img_win.activate_button(self.brush_button)
         self.eraser_button.config(relief = RAISED)
+        self.rect_btn.config(relief = RAISED)
+        self.circle_btn.config(relief = RAISED)
+        self.line_btn.config(relief = RAISED)
+        root.bind('<Button-1>', lambda x:[self.set()])
 
     def erase(self):
         root.config(cursor="circle")
@@ -506,6 +569,10 @@ class Main:
         self.color = 'white'
         self.img_win.activate_button(self.eraser_button, eraser_mode = True)
         self.brush_button.config(relief = RAISED)
+        self.rect_btn.config(relief = RAISED)
+        self.circle_btn.config(relief = RAISED)
+        self.line_btn.config(relief = RAISED)
+        root.bind('<Button-1>', lambda x:[self.set()])
     
     # def change_voice(self, shift):
     #     y, sr = librosa.load(self.images[0])
@@ -666,7 +733,7 @@ class Main:
         self.prev_frame()
 
     def version(self):
-        showinfo("Version", "Solemn2D version 1.0")    
+        showinfo("Version", "Solemn2D version 1.4")    
         pop = Tk()
         pop.title('check for latest version')
         pop.geometry('150x50')
@@ -714,7 +781,7 @@ class Main:
         create_Tip(message, 'Enter your feedback')
 
     def FetchSound(self):
-        self.images[0] = askopenfilename(title = "Open Sound Track - Solemn2D 1.0")
+        self.images[0] = askopenfilename(title = "Open Sound Track - Solemn2D 1.4")
         try:self.track = AudioSegment.from_mp3(self.images[0])
         except:pass
         self.update_sound_editing_tools()
@@ -766,7 +833,7 @@ class Main:
             img = Image.open(self.images[self.n])
         except:pass
         image = ImageOps.mirror(img)
-        im = self.images[self.n].replace('.', '') + '.jpg'  
+        im = self.images[self.n].replace('.png', '').replace('.jpg', '').replace('.bmp', '') + '.jpg'  
         image = image.save(im)
         self.images.append(im)
 
@@ -785,14 +852,16 @@ class Main:
 
     def Save_image(self):
         # self.canvas.postscript(file = filename, colormode = "color")
-        self.full_screen()
-        sleep(5)#wait for window to settle
-        x=root.winfo_rootx()+self.img_win.winfo_x()
-        y=root.winfo_rooty()+self.img_win.winfo_y()
-        x1 = x+self.img_win.winfo_width()
-        y1 = y+self.img_win.winfo_height()
-        ImageGrab.grab().crop((x,y,x1-16,y1-16)).save(self.images[self.n]+'.png')
-        self.exit_full_screen()
+        # sleep(5)#wait for window to settle
+        # self.full_screen()
+        # x=root.winfo_rootx()+self.img_win.winfo_x()
+        # y=root.winfo_rooty()+self.img_win.winfo_y()
+        # x1 = x+self.img_win.winfo_width()
+        # y1 = y+self.img_win.winfo_height()
+        # file = ImageGrab.grab().crop((x,y,x1-16,y1-16)).save(self.images[self.n]+'.png')
+        # self.images.append(file)
+        # self.exit_full_screen()
+        self.img_win.save()
 
     def update_nav(self):
         self.navFrame = Scale(Frame, from_ = 1, to = len(self.images)-1, orient = HORIZONTAL)
