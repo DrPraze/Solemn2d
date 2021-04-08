@@ -1,0 +1,30 @@
+HOW TO USE SOLEMN 2D
+
+This app uses a simple way to make animations, 
+(by looping through images) to create a video,
+ so to use the app you'll have to make each frame
+ by yourself, you can design them in apps like 
+mspaint, coreldraw, photoshop e.t.c, and import
+ the images in the file, by pressing the open 
+image button in the file menu, or drag and drop
+the image to the window, and continue the
+ opening of images on each frame, the drawing
+tools in solemn 2d are not that good and are not
+adviced for whole drawings, but they would get better
+in future versions. you can also 
+delete the frame with the delete frame button in
+then import the sound of the animation with the 
+import button the tool menu as well, there are a
+ set of tools for editing sounds to add special
+effects at your left.set the frames per second 
+(fps), then click the preview button to see your
+ animation, you can save the file with Ctrl+S or
+ click the save button in the file menu, and open
+ it for later, make sure you don't delete the images
+ you're using for your animations keep them safely in
+ a folder.You can preview the animation during the 
+process and export it with the export button when 
+you are done with the project you are working on.
+for more further detailed tutorials, join the facebook
+community here>>> 
+https://free.facebook.com/groups/1035485006974406/?refid=27&_rdc=1&_rdr
