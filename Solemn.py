@@ -452,7 +452,7 @@ class Main:
         self.undo_btn = Button(self.image_frame, width = 6, text = "Undo", relief = GROOVE, command = self.img_win._undo_)
         self.undo_btn.place(x = 5, y = 122)
         create_Tip(self.undo_btn, "Undo changes made to the current frame")
-        self.redo_btn = Button(self.image_frame, width = 6, text = "Redo", relief = GROOVE, command = self.comingsoon)
+        self.redo_btn = Button(self.image_frame, width = 6, text = "Redo", relief = GROOVE, command = self.img_win._redo_)
         self.redo_btn.place(x = 60, y = 122)
         create_Tip(self.redo_btn, "Redo changes made to the current frame")
 
